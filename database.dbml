@@ -1,0 +1,223 @@
+// 玉米优质高效栽培管理系统 - 单机版数据库设计
+// Database Markup Language (DBML)
+
+Project CropModeling {
+  database_type: 'SQLite'
+  Note: '玉米优质高效栽培管理系统单机版数据库设计（SQLite，本地存储）'
+}
+
+// ==================== 地块管理 ====================
+
+Table fields {
+  id integer [primary key, increment]
+  name text [not null]
+  area real [not null, note: '面积（亩）']
+  location_province text
+  location_city text
+  location_county text
+  location_detail text
+  coordinates text [note: 'GeoJSON 字符串，可选']
+  soil_type text [note: '土壤类型：壤土、黏土、砂土等']
+  soil_ph real
+  soil_organic_matter real [note: '有机质含量（g/kg）']
+  notes text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '地块信息表'
+  indexes {
+    name
+    (location_province, location_city)
+  }
+}
+
+// ==================== 作物品种 ====================
+
+Table crop_varieties {
+  id integer [primary key, increment]
+  name text [not null, unique]
+  code text [unique, note: '品种编号']
+  type text [not null, note: '类型：早熟、中熟、晚熟']
+  growth_period integer [note: '生育期（天）']
+  yield_potential real [note: '产量潜力（kg/亩）']
+  disease_resistance text [note: '抗病性描述，可存文本或 JSON 字符串']
+  description text
+  is_active boolean [not null, default: true]
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '作物品种表'
+  indexes {
+    type
+    is_active
+  }
+}
+
+// ==================== 种植记录 ====================
+
+Table planting_records {
+  id integer [primary key, increment]
+  field_id integer [not null, ref: > fields.id]
+  variety_id integer [not null, ref: > crop_varieties.id]
+  year integer [not null, note: '种植年份']
+  season text [not null, note: '季节：春播、夏播']
+  planting_date date [not null]
+  expected_harvest_date date
+  actual_harvest_date date
+  planting_density integer [note: '种植密度（株/亩）']
+  row_spacing real [note: '行距（cm）']
+  plant_spacing real [note: '株距（cm）']
+  status text [not null, default: 'planning', note: 'planning, growing, harvested, failed']
+  notes text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '种植主记录表，串联地块、品种、生长、操作、评价等业务数据'
+  indexes {
+    field_id
+    variety_id
+    year
+    status
+  }
+}
+
+// ==================== 生长记录 ====================
+
+Table growth_records {
+  id integer [primary key, increment]
+  planting_record_id integer [not null, ref: > planting_records.id]
+  record_date date [not null]
+  growth_stage text [not null, note: '生长阶段：苗期、拔节期、抽雄期、灌浆期、成熟期']
+  plant_height real [note: '株高（cm）']
+  leaf_count integer [note: '叶片数']
+  leaf_color text [note: '叶色：深绿、正常、偏黄等']
+  disease_status text [note: '病害状况']
+  pest_status text [note: '虫害状况']
+  soil_moisture real [note: '土壤含水量（%）']
+  weather_temperature_avg real [note: '平均温度（℃）']
+  weather_rainfall real [note: '降雨量（mm）']
+  photo_paths text [note: '照片路径 JSON 字符串']
+  notes text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '生长监测记录表'
+  indexes {
+    planting_record_id
+    record_date
+    growth_stage
+  }
+}
+
+// ==================== 农事操作记录 ====================
+
+Table operation_records {
+  id integer [primary key, increment]
+  planting_record_id integer [not null, ref: > planting_records.id]
+  operation_type text [not null, note: '操作类型：fertilization, irrigation, pesticide, weeding, tillage, harvest, other']
+  operation_date date [not null]
+  details text [note: '操作详情 JSON 字符串，用于存储施肥、灌溉、植保等差异化参数']
+  cost real [note: '成本（元）']
+  operator text [note: '操作人员']
+  photo_paths text [note: '照片路径 JSON 字符串']
+  notes text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '农事操作记录表，采用通用主表 + details 字段收敛不同操作类型'
+  indexes {
+    planting_record_id
+    operation_type
+    operation_date
+  }
+}
+
+// ==================== 专家知识管理 ====================
+
+Table knowledge_items {
+  id integer [primary key, increment]
+  category text [not null, note: '分类：施肥、灌溉、病虫害防治、播种、收获等']
+  title text [not null]
+  content text [not null, note: '知识内容，支持 Markdown 或纯文本']
+  tags text [note: '标签 JSON 字符串']
+  source text [note: '知识来源：专家、文献、实验等']
+  is_active boolean [not null, default: true]
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '专家知识条目表，首期以知识库为主，暂不引入复杂规则引擎'
+  indexes {
+    category
+    is_active
+    title
+  }
+}
+
+// ==================== 决策记录 ====================
+
+Table decisions {
+  id integer [primary key, increment]
+  field_id integer [ref: > fields.id]
+  planting_record_id integer [ref: > planting_records.id]
+  decision_type text [not null, note: '决策类型：常年决策、当年决策']
+  decision_category text [not null, note: '决策类别：品种选择、播种计划、施肥方案、灌溉方案、病虫害防治、收获建议等']
+  decision_date date [not null]
+  title text [not null]
+  content text [not null]
+  basis_summary text [note: '决策依据摘要']
+  recommended_actions text [note: '推荐行动清单 JSON 字符串或 Markdown 列表']
+  status text [not null, default: 'pending', note: 'pending, accepted, rejected, executed, completed']
+  user_feedback text [note: '用户反馈']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '决策记录表；支持地块级或种植记录级决策，适配常年决策与当年决策'
+  indexes {
+    field_id
+    planting_record_id
+    decision_type
+    decision_category
+    decision_date
+    status
+  }
+}
+
+// ==================== 效益评价 ====================
+
+Table evaluations {
+  id integer [primary key, increment]
+  planting_record_id integer [not null, ref: > planting_records.id]
+  evaluation_date date [not null]
+  evaluation_type text [not null, note: '评价类型：阶段评价、最终评价']
+  actual_yield real [note: '实际产量（kg/亩）']
+  total_cost real [note: '总成本（元/亩）']
+  total_income real [note: '总收入（元/亩）']
+  net_profit real [note: '净利润（元/亩）']
+  overall_score real [note: '综合评分（0-100）']
+  improvement_suggestions text [note: '改进建议']
+  notes text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '效益评价表，首期聚焦产量、成本、收益和改进建议等核心指标'
+  indexes {
+    planting_record_id
+    evaluation_date
+    evaluation_type
+  }
+}
+
+// ==================== 应用配置 ====================
+
+Table app_settings {
+  id integer [primary key, increment]
+  config_key text [not null, unique]
+  config_value text [not null, note: '配置值，支持普通文本或 JSON 字符串']
+  description text
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '应用参数配置表，用于参数调整模块'
+  indexes {
+    config_key
+  }
+}
