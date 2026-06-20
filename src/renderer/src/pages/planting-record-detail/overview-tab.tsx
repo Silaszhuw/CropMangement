@@ -1,4 +1,6 @@
-import { Descriptions, Space, Tag, Typography } from 'antd'
+/** 种植记录详情 - 基本信息标签页：展示种植记录的基本参数和关联信息 */
+import { Button, Descriptions, Space, Tag, Typography } from 'antd'
+import { useNavigate } from 'react-router-dom'
 import type { PlantingRecord, Field, CropVariety } from '../../../../shared/types/database'
 
 interface OverviewTabProps {
@@ -8,6 +10,7 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ record, field, variety }: OverviewTabProps): React.JSX.Element {
+  const navigate = useNavigate()
   const statusColorMap: Record<string, string> = {
     planning: 'default',
     growing: 'processing',
@@ -48,6 +51,11 @@ export function OverviewTab({ record, field, variety }: OverviewTabProps): React
       {field && (
         <div>
           <Typography.Title level={5}>地块信息</Typography.Title>
+          <Space style={{ marginBottom: 12 }}>
+            <Button type="link" onClick={() => navigate(`/fields/${field.id}`)}>
+              查看地块详情
+            </Button>
+          </Space>
           <Descriptions bordered column={2}>
             <Descriptions.Item label="地块名称">{field.name}</Descriptions.Item>
             <Descriptions.Item label="面积（亩）">{field.area}</Descriptions.Item>
@@ -64,6 +72,11 @@ export function OverviewTab({ record, field, variety }: OverviewTabProps): React
       {variety && (
         <div>
           <Typography.Title level={5}>品种信息</Typography.Title>
+          <Space style={{ marginBottom: 12 }}>
+            <Button type="link" onClick={() => navigate(`/parameter-management/${variety.id}`)}>
+              查看品种详情
+            </Button>
+          </Space>
           <Descriptions bordered column={2}>
             <Descriptions.Item label="品种名称">{variety.name}</Descriptions.Item>
             <Descriptions.Item label="品种编号">{variety.code ?? '-'}</Descriptions.Item>
