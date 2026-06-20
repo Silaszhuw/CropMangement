@@ -1,3 +1,4 @@
+/** 作物品种数据访问层：提供作物品种的 CRUD 操作 */
 import Database from 'better-sqlite3'
 import type { CropVariety } from '../../../shared/types/database'
 import { BaseRepository } from './base-repository'
@@ -52,6 +53,10 @@ export class CropVarietiesRepository extends BaseRepository {
     super(database)
   }
 
+  /**
+   * 查询所有作物品种记录
+   * @returns 作物品种实体数组，按更新时间和 ID 倒序排列
+   */
   findAll(): CropVariety[] {
     const rows = this.database
       .prepare<[], CropVarietyRow>('SELECT * FROM crop_varieties ORDER BY updated_at DESC, id DESC')
@@ -60,6 +65,11 @@ export class CropVarietiesRepository extends BaseRepository {
     return rows.map(mapCropVariety)
   }
 
+  /**
+   * 根据 ID 查询作物品种记录
+   * @param id 记录ID
+   * @returns 作物品种实体，如果不存在则返回 null
+   */
   findById(id: number): CropVariety | null {
     const row = this.database
       .prepare<[number], CropVarietyRow>('SELECT * FROM crop_varieties WHERE id = ?')
@@ -68,6 +78,12 @@ export class CropVarietiesRepository extends BaseRepository {
     return row ? mapCropVariety(row) : null
   }
 
+  /**
+   * 创建作物品种记录
+   * @param input 创建输入数据，isActive 默认为 true
+   * @returns 新创建的作物品种实体
+   * @throws 如果创建失败则抛出错误
+   */
   create(input: CreateCropVarietyInput): CropVariety {
     const result = this.database
       .prepare(
@@ -101,6 +117,12 @@ export class CropVarietiesRepository extends BaseRepository {
     return created
   }
 
+  /**
+   * 更新作物品种记录
+   * @param input 更新输入数据
+   * @returns 更新后的作物品种实体
+   * @throws 如果更新后未找到记录则抛出错误
+   */
   update(input: UpdateCropVarietyInput): CropVariety {
     this.database
       .prepare(
@@ -136,6 +158,10 @@ export class CropVarietiesRepository extends BaseRepository {
     return updated
   }
 
+  /**
+   * 删除作物品种记录
+   * @param id 记录ID
+   */
   delete(id: number): void {
     this.database.prepare('DELETE FROM crop_varieties WHERE id = ?').run(id)
   }
