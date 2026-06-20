@@ -1,6 +1,8 @@
+/** 试验数据管理页面：作为二级工作台组织试验记录和生育期试验数据管理入口 */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Button,
+  Card,
   DatePicker,
   Form,
   Input,
@@ -16,6 +18,7 @@ import {
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
+import { useNavigate } from 'react-router-dom'
 import type { Field, CropVariety, PlantingRecord } from '../../../../shared/types/database'
 import type {
   CreatePlantingRecordInput,
@@ -73,6 +76,7 @@ function buildVarietyMap(varieties: CropVariety[]): Map<number, CropVariety> {
 
 export function PlantingRecordsPage(): React.JSX.Element {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const plantingRecordsState = useAppSelector((state) => state.plantingRecords)
   const fieldsState = useAppSelector((state) => state.fields)
   const cropVarietiesState = useAppSelector((state) => state.cropVarieties)
@@ -80,6 +84,10 @@ export function PlantingRecordsPage(): React.JSX.Element {
   const [form] = Form.useForm<PlantingRecordFormValues>()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState<PlantingRecord | null>(null)
+  const [keyword, setKeyword] = useState('')
+  const [yearFilter, setYearFilter] = useState<number | undefined>()
+  const [seasonFilter, setSeasonFilter] = useState<string | undefined>()
+  const [statusFilter, setStatusFilter] = useState<string | undefined>()
 
   useEffect(() => {
     void dispatch(fetchPlantingRecords())
@@ -89,6 +97,38 @@ export function PlantingRecordsPage(): React.JSX.Element {
 
   const fieldMap = useMemo(() => buildFieldMap(fieldsState.items), [fieldsState.items])
   const varietyMap = useMemo(() => buildVarietyMap(cropVarietiesState.items), [cropVarietiesState.items])
+  const statusSummary = useMemo(
+    () => ({
+      growing: plantingRecordsState.items.filter((item) => item.status === 'growing').length,
+      harvested: plantingRecordsState.items.filter((item) => item.status === 'harvested').length
+    }),
+    [plantingRecordsState.items]
+  )
+
+  const filteredItems = useMemo(() => {
+    const normalizedKeyword = keyword.trim().toLowerCase()
+
+    return plantingRecordsState.items.filter((item) => {
+      const fieldName = fieldMap.get(item.fieldId)?.name
+      const varietyName = varietyMap.get(item.varietyId)?.name
+      const matchesKeyword =
+        !normalizedKeyword ||
+        [fieldName, varietyName, item.season, item.status, item.notes]
+          .filter(Boolean)
+          .some((value) => value!.toLowerCase().includes(normalizedKeyword))
+
+      const matchesYear = !yearFilter || item.year === yearFilter
+      const matchesSeason = !seasonFilter || item.season === seasonFilter
+      const matchesStatus = !statusFilter || item.status === statusFilter
+
+      return matchesKeyword && matchesYear && matchesSeason && matchesStatus
+    })
+  }, [plantingRecordsState.items, keyword, yearFilter, seasonFilter, statusFilter, fieldMap, varietyMap])
+
+  const yearOptions = useMemo(
+    () => Array.from(new Set(plantingRecordsState.items.map((item) => item.year))).sort((a, b) => b - a).map((value) => ({ label: String(value), value })),
+    [plantingRecordsState.items]
+  )
 
   const handleEdit = useCallback(
     (record: PlantingRecord): void => {
@@ -158,6 +198,9 @@ export function PlantingRecordsPage(): React.JSX.Element {
         key: 'actions',
         render: (_, record) => (
           <Space>
+            <Button type="link" onClick={() => navigate(`/experimental-data/${record.id}`)}>
+              查看详情
+            </Button>
             <Button type="link" onClick={() => handleEdit(record)}>
               编辑
             </Button>
@@ -170,7 +213,7 @@ export function PlantingRecordsPage(): React.JSX.Element {
         )
       }
     ],
-    [fieldMap, handleDelete, handleEdit, varietyMap]
+    [fieldMap, handleDelete, handleEdit, navigate, varietyMap]
   )
 
   function handleCreate(): void {
@@ -227,25 +270,100 @@ export function PlantingRecordsPage(): React.JSX.Element {
       <div className="page-header">
         <div>
           <Typography.Title level={3} style={{ marginBottom: 8 }}>
-            种植记录
+            试验数据管理
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            将地块与品种串联为具体种植计划，记录播种、收获与当前状态，是后续生长监测和效益评价的主线数据。
+            本模块为二级工作台，负责组织试验记录台账与专题试验录入入口。根据 PDF 结构，生育期试验数据管理应作为独立三级页面进入。
           </Typography.Paragraph>
         </div>
         <Space>
-          <Tag color="processing">共 {plantingRecordsState.items.length} 条</Tag>
+          <Tag color="processing">筛选后 {filteredItems.length} / 共 {plantingRecordsState.items.length} 条</Tag>
           <Button type="primary" onClick={handleCreate}>
             新增种植记录
           </Button>
         </Space>
       </div>
 
+      <div className="module-grid">
+        <Card
+          className="module-entry-card"
+          title="生育期试验数据管理"
+          extra={
+            <Button type="link" onClick={() => navigate('/experimental-data/growth-stage')}>
+              进入三级界面
+            </Button>
+          }
+        >
+          <Space direction="vertical" size={12} style={{ display: 'flex' }}>
+            <Typography.Paragraph style={{ marginBottom: 0 }}>
+              录入拔节、抽雄、吐丝、成熟等关键生育阶段观测信息，形成可用于模型校准和生育进程预测的试验观测台账。
+            </Typography.Paragraph>
+            <Button type="primary" onClick={() => navigate('/experimental-data/growth-stage')}>
+              打开生育期试验数据管理
+            </Button>
+          </Space>
+        </Card>
+
+        <Card className="module-entry-card" title="试验记录总览">
+          <Space direction="vertical" size={12} style={{ display: 'flex' }}>
+            <Typography.Paragraph style={{ marginBottom: 0 }}>
+              下方表格继续承担试验批次与种植记录主台账功能，用于维护地块、品种、播种日期和生育状态等基础业务数据。
+            </Typography.Paragraph>
+            <Space wrap>
+              <Tag color="processing">在种 {statusSummary.growing} 条</Tag>
+              <Tag color="success">已收获 {statusSummary.harvested} 条</Tag>
+            </Space>
+          </Space>
+        </Card>
+      </div>
+
+      <div className="filters-bar">
+        <Input
+          allowClear
+          placeholder="搜索地块、品种、季节、状态、备注"
+          value={keyword}
+          onChange={(event) => setKeyword(event.target.value)}
+          style={{ width: 320 }}
+        />
+        <Select
+          allowClear
+          placeholder="按年份筛选"
+          value={yearFilter}
+          onChange={setYearFilter}
+          options={yearOptions}
+          style={{ width: 140 }}
+        />
+        <Select
+          allowClear
+          placeholder="按季节筛选"
+          value={seasonFilter}
+          onChange={setSeasonFilter}
+          options={[
+            { label: '春播', value: '春播' },
+            { label: '夏播', value: '夏播' }
+          ]}
+          style={{ width: 140 }}
+        />
+        <Select
+          allowClear
+          placeholder="按状态筛选"
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: 'planning', value: 'planning' },
+            { label: 'growing', value: 'growing' },
+            { label: 'harvested', value: 'harvested' },
+            { label: 'failed', value: 'failed' }
+          ]}
+          style={{ width: 160 }}
+        />
+      </div>
+
       <Table
         rowKey="id"
         loading={plantingRecordsState.loading || fieldsState.loading || cropVarietiesState.loading}
         columns={columns}
-        dataSource={plantingRecordsState.items}
+        dataSource={filteredItems}
       />
 
       <Modal
