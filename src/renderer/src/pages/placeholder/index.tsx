@@ -1,3 +1,4 @@
+/** 占位符页面组件：用于尚未实现的功能模块 */
 import { Card, Typography } from 'antd'
 
 interface PlaceholderPageProps {
