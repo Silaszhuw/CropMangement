@@ -1,3 +1,4 @@
+/** 作物品种状态切片：管理作物品种的状态和异步操作 */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { CropVariety } from '../../../../shared/types/database'
 import type {

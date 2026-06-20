@@ -1,13 +1,15 @@
+/** 种植记录详情页：展示种植记录完整信息及关联的生长数据 */
 import { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Button, Space, Spin, Tabs, Typography, message } from 'antd'
+import { Button, Card, Col, Row, Space, Spin, Statistic, Tabs, Typography, message } from 'antd'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { fetchPlantingRecords } from '../../store/slices/planting-records.slice'
 import { fetchFields } from '../../store/slices/fields.slice'
 import { fetchCropVarieties } from '../../store/slices/crop-varieties.slice'
 import { OverviewTab } from './overview-tab'
 import { GrowthRecordsTab } from './growth-records-tab'
+import { GrowthStageObservationsTab } from './growth-stage-observations-tab'
 import { OperationRecordsTab } from './operation-records-tab'
 import { EvaluationsTab } from './evaluations-tab'
 
@@ -20,6 +22,9 @@ export function PlantingRecordDetailPage(): React.JSX.Element {
   const plantingRecordsState = useAppSelector((state) => state.plantingRecords)
   const fieldsState = useAppSelector((state) => state.fields)
   const cropVarietiesState = useAppSelector((state) => state.cropVarieties)
+  const growthRecordsState = useAppSelector((state) => state.growthRecords)
+  const operationRecordsState = useAppSelector((state) => state.operationRecords)
+  const evaluationsState = useAppSelector((state) => state.evaluations)
 
   const recordId = id ? parseInt(id, 10) : null
   const record = useMemo(
@@ -36,6 +41,13 @@ export function PlantingRecordDetailPage(): React.JSX.Element {
     () => cropVarietiesState.items.find((item) => item.id === record?.varietyId),
     [cropVarietiesState.items, record?.varietyId]
   )
+  const growthCount = growthRecordsState.items.length
+  const operationCount = operationRecordsState.items.length
+  const evaluationCount = evaluationsState.items.length
+  const latestEvaluation = useMemo(
+    () => evaluationsState.items[0] ?? null,
+    [evaluationsState.items]
+  )
 
   useEffect(() => {
     void dispatch(fetchPlantingRecords())
@@ -44,7 +56,7 @@ export function PlantingRecordDetailPage(): React.JSX.Element {
   }, [dispatch])
 
   const handleBack = useCallback(() => {
-    navigate('/planting-records')
+    navigate('/experimental-data')
   }, [navigate])
 
   if (!recordId) {
@@ -98,6 +110,39 @@ export function PlantingRecordDetailPage(): React.JSX.Element {
         </div>
       </div>
 
+      <Row gutter={[16, 16]}>
+        <Col span={6}>
+          <Card>
+            <Statistic title="当前状态" value={record.status} />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic title="生长记录" value={growthCount} suffix="条" />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic title="农事操作" value={operationCount} suffix="条" />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic title="效益评价" value={evaluationCount} suffix="条" />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card>
+            <Statistic title="最近评价类型" value={latestEvaluation?.evaluationType ?? '-'} />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card>
+            <Statistic title="最近综合评分" value={latestEvaluation?.overallScore ?? '-'} />
+          </Card>
+        </Col>
+      </Row>
+
       <Tabs
         defaultActiveKey="overview"
         items={[
@@ -110,6 +155,11 @@ export function PlantingRecordDetailPage(): React.JSX.Element {
             key: 'growth-records',
             label: '生长记录',
             children: <GrowthRecordsTab plantingRecordId={record.id} />
+          },
+          {
+            key: 'growth-stage-observations',
+            label: '生育期观测',
+            children: <GrowthStageObservationsTab plantingRecordId={record.id} />
           },
           {
             key: 'operation-records',

@@ -1,3 +1,7 @@
+/**
+ * 数据库初始化入口：打开数据库连接并执行 SQL 迁移脚本
+ */
+
 import type { App } from 'electron'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'

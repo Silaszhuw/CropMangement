@@ -1,3 +1,4 @@
+/** 地块数据访问层：提供地块信息的 CRUD 操作 */
 import Database from 'better-sqlite3'
 import type { Field } from '../../../shared/types/database'
 import { BaseRepository } from './base-repository'
@@ -61,6 +62,10 @@ export class FieldsRepository extends BaseRepository {
     super(database)
   }
 
+  /**
+   * 查询所有地块记录
+   * @returns 地块实体数组，按更新时间和 ID 倒序排列
+   */
   findAll(): Field[] {
     const rows = this.database
       .prepare<[], FieldRow>('SELECT * FROM fields ORDER BY updated_at DESC, id DESC')
@@ -69,11 +74,22 @@ export class FieldsRepository extends BaseRepository {
     return rows.map(mapField)
   }
 
+  /**
+   * 根据 ID 查询地块记录
+   * @param id 记录ID
+   * @returns 地块实体，如果不存在则返回 null
+   */
   findById(id: number): Field | null {
     const row = this.database.prepare<[number], FieldRow>('SELECT * FROM fields WHERE id = ?').get(id)
     return row ? mapField(row) : null
   }
 
+  /**
+   * 创建地块记录
+   * @param input 创建输入数据
+   * @returns 新创建的地块实体
+   * @throws 如果创建失败则抛出错误
+   */
   create(input: CreateFieldInput): Field {
     const result = this.database
       .prepare(
@@ -113,6 +129,12 @@ export class FieldsRepository extends BaseRepository {
     return created
   }
 
+  /**
+   * 更新地块记录
+   * @param input 更新输入数据
+   * @returns 更新后的地块实体
+   * @throws 如果更新后未找到记录则抛出错误
+   */
   update(input: UpdateFieldInput): Field {
     this.database
       .prepare(
@@ -154,6 +176,10 @@ export class FieldsRepository extends BaseRepository {
     return updated
   }
 
+  /**
+   * 删除地块记录
+   * @param id 记录ID
+   */
   delete(id: number): void {
     this.database.prepare('DELETE FROM fields WHERE id = ?').run(id)
   }

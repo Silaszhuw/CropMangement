@@ -1,3 +1,4 @@
+/** 种植记录状态切片：管理种植记录的状态和异步操作 */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PlantingRecord } from '../../../../shared/types/database'
 import type {

@@ -1,3 +1,13 @@
+/** IPC 处理器导出模块：统一导出所有 IPC 处理器 */
 export * from './fields.ipc'
 export * from './crop-varieties.ipc'
 export * from './planting-records.ipc'
+export * from './growth-records.ipc'
+export * from './operation-records.ipc'
+export * from './evaluations.ipc'
+export * from './knowledge-items.ipc'
+export * from './decisions.ipc'
+export * from './app-settings.ipc'
+export * from './model-parameters.ipc'
+export * from './growth-stage-observations.ipc'
+export * from './parameter-adjustment-records.ipc'

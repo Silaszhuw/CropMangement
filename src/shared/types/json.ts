@@ -1,3 +1,4 @@
+/** JSON 数据类型定义：定义通用的 JSON 值和对象类型 */
 export type JsonValue = string | number | boolean | null | JsonObject | JsonArray
 
 export interface JsonObject {

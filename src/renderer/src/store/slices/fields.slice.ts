@@ -1,3 +1,4 @@
+/** 地块状态切片：管理地块的状态和异步操作 */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { Field } from '../../../../shared/types/database'
 import type { CreateFieldInput, UpdateFieldInput } from '../../../../main/database/repositories/fields-repository'

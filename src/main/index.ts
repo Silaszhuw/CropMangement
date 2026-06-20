@@ -1,10 +1,23 @@
+/**
+ * Electron 主进程入口：初始化数据库、注册所有 IPC handler、创建应用主窗口
+ */
+
 import { app, BrowserWindow } from 'electron'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { initializeDatabase } from './database'
 import {
+  registerAppSettingsIpc,
   registerCropVarietiesIpc,
+  registerDecisionsIpc,
+  registerEvaluationsIpc,
   registerFieldsIpc,
+  registerGrowthStageObservationsIpc,
+  registerGrowthRecordsIpc,
+  registerKnowledgeItemsIpc,
+  registerModelParametersIpc,
+  registerOperationRecordsIpc,
+  registerParameterAdjustmentRecordsIpc,
   registerPlantingRecordsIpc
 } from './ipc'
 
@@ -45,6 +58,15 @@ app.whenReady().then(() => {
   registerFieldsIpc()
   registerCropVarietiesIpc()
   registerPlantingRecordsIpc()
+  registerGrowthRecordsIpc()
+  registerOperationRecordsIpc()
+  registerEvaluationsIpc()
+  registerKnowledgeItemsIpc()
+  registerDecisionsIpc()
+  registerAppSettingsIpc()
+  registerModelParametersIpc()
+  registerGrowthStageObservationsIpc()
+  registerParameterAdjustmentRecordsIpc()
   createWindow()
 
   app.on('activate', () => {

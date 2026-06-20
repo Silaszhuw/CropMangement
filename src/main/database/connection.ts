@@ -1,3 +1,7 @@
+/**
+ * SQLite 数据库连接管理：创建并配置数据库连接，启用 WAL 模式和外键约束
+ */
+
 import type { App } from 'electron'
 import Database from 'better-sqlite3'
 import { existsSync, mkdirSync } from 'node:fs'

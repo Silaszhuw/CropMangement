@@ -1,3 +1,4 @@
+/** 参数管理页面：维护玉米品种参数档案 */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Button,
@@ -15,6 +16,7 @@ import {
   message
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import { useNavigate } from 'react-router-dom'
 import type { CropVariety } from '../../../../shared/types/database'
 import type {
   CreateCropVarietyInput,
@@ -54,11 +56,15 @@ function mapCropVarietyToFormValues(record: CropVariety): CropVarietyFormValues 
 
 export function CropVarietiesPage(): React.JSX.Element {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const { items, loading, submitting } = useAppSelector((state) => state.cropVarieties)
   const [messageApi, contextHolder] = message.useMessage()
   const [form] = Form.useForm<CropVarietyFormValues>()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState<CropVariety | null>(null)
+  const [keyword, setKeyword] = useState('')
+  const [typeFilter, setTypeFilter] = useState<string | undefined>()
+  const [statusFilter, setStatusFilter] = useState<string | undefined>()
 
   useEffect(() => {
     void dispatch(fetchCropVarieties())
@@ -83,6 +89,31 @@ export function CropVarietiesPage(): React.JSX.Element {
       }
     },
     [dispatch, messageApi]
+  )
+
+  const filteredItems = useMemo(() => {
+    const normalizedKeyword = keyword.trim().toLowerCase()
+
+    return items.filter((item) => {
+      const matchesKeyword =
+        !normalizedKeyword ||
+        [item.name, item.code, item.type, item.diseaseResistance, item.description]
+          .filter(Boolean)
+          .some((value) => value!.toLowerCase().includes(normalizedKeyword))
+
+      const matchesType = !typeFilter || item.type === typeFilter
+      const matchesStatus =
+        !statusFilter ||
+        (statusFilter === 'enabled' && item.isActive) ||
+        (statusFilter === 'disabled' && !item.isActive)
+
+      return matchesKeyword && matchesType && matchesStatus
+    })
+  }, [items, keyword, typeFilter, statusFilter])
+
+  const typeOptions = useMemo(
+    () => Array.from(new Set(items.map((item) => item.type))).map((value) => ({ label: value, value })),
+    [items]
   )
 
   const columns: ColumnsType<CropVariety> = useMemo(
@@ -125,6 +156,9 @@ export function CropVarietiesPage(): React.JSX.Element {
         key: 'actions',
         render: (_, record) => (
           <Space>
+            <Button type="link" onClick={() => navigate(`/parameter-management/${record.id}`)}>
+              查看参数详情
+            </Button>
             <Button type="link" onClick={() => handleEdit(record)}>
               编辑
             </Button>
@@ -137,7 +171,7 @@ export function CropVarietiesPage(): React.JSX.Element {
         )
       }
     ],
-    [handleDelete, handleEdit]
+    [handleDelete, handleEdit, navigate]
   )
 
   function handleCreate(): void {
@@ -174,21 +208,50 @@ export function CropVarietiesPage(): React.JSX.Element {
       <div className="page-header">
         <div>
           <Typography.Title level={3} style={{ marginBottom: 8 }}>
-            品种管理
+            参数管理
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            维护玉米品种档案，支持后续种植记录直接关联品种与关键农艺属性。
+            维护玉米品种参数档案，包括品种编号、熟期类型、生育期、产量潜力和抗病性描述，为模拟、预测与试验数据关联提供基础参数。
           </Typography.Paragraph>
         </div>
         <Space>
-          <Tag color="processing">共 {items.length} 条</Tag>
+          <Tag color="processing">筛选后 {filteredItems.length} / 共 {items.length} 条</Tag>
           <Button type="primary" onClick={handleCreate}>
-            新增品种
+            新增品种参数
           </Button>
         </Space>
       </div>
 
-      <Table rowKey="id" loading={loading} columns={columns} dataSource={items} />
+      <div className="filters-bar">
+        <Input
+          allowClear
+          placeholder="搜索名称、编号、类型、抗病性、说明"
+          value={keyword}
+          onChange={(event) => setKeyword(event.target.value)}
+          style={{ width: 320 }}
+        />
+        <Select
+          allowClear
+          placeholder="按类型筛选"
+          value={typeFilter}
+          onChange={setTypeFilter}
+          options={typeOptions}
+          style={{ width: 180 }}
+        />
+        <Select
+          allowClear
+          placeholder="按状态筛选"
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: '启用', value: 'enabled' },
+            { label: '停用', value: 'disabled' }
+          ]}
+          style={{ width: 180 }}
+        />
+      </div>
+
+      <Table rowKey="id" loading={loading} columns={columns} dataSource={filteredItems} />
 
       <Modal
         destroyOnHidden
