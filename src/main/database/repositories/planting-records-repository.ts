@@ -1,3 +1,4 @@
+/** 种植记录数据访问层：提供种植记录的 CRUD 操作 */
 import Database from 'better-sqlite3'
 import type { PlantingRecord } from '../../../shared/types/database'
 import { BaseRepository } from './base-repository'
@@ -64,6 +65,10 @@ export class PlantingRecordsRepository extends BaseRepository {
     super(database)
   }
 
+  /**
+   * 查询所有种植记录
+   * @returns 种植记录实体数组，按更新时间和 ID 倒序排列
+   */
   findAll(): PlantingRecord[] {
     const rows = this.database
       .prepare<[], PlantingRecordRow>('SELECT * FROM planting_records ORDER BY updated_at DESC, id DESC')
@@ -72,6 +77,11 @@ export class PlantingRecordsRepository extends BaseRepository {
     return rows.map(mapPlantingRecord)
   }
 
+  /**
+   * 根据 ID 查询种植记录
+   * @param id 记录ID
+   * @returns 种植记录实体，如果不存在则返回 null
+   */
   findById(id: number): PlantingRecord | null {
     const row = this.database
       .prepare<[number], PlantingRecordRow>('SELECT * FROM planting_records WHERE id = ?')
@@ -80,6 +90,12 @@ export class PlantingRecordsRepository extends BaseRepository {
     return row ? mapPlantingRecord(row) : null
   }
 
+  /**
+   * 创建种植记录
+   * @param input 创建输入数据，status 默认为 'planning'
+   * @returns 新创建的种植记录实体
+   * @throws 如果创建失败则抛出错误
+   */
   create(input: CreatePlantingRecordInput): PlantingRecord {
     const result = this.database
       .prepare(
@@ -121,6 +137,12 @@ export class PlantingRecordsRepository extends BaseRepository {
     return created
   }
 
+  /**
+   * 更新种植记录
+   * @param input 更新输入数据
+   * @returns 更新后的种植记录实体
+   * @throws 如果更新后未找到记录则抛出错误
+   */
   update(input: UpdatePlantingRecordInput): PlantingRecord {
     this.database
       .prepare(
@@ -164,6 +186,10 @@ export class PlantingRecordsRepository extends BaseRepository {
     return updated
   }
 
+  /**
+   * 删除种植记录
+   * @param id 记录ID
+   */
   delete(id: number): void {
     this.database.prepare('DELETE FROM planting_records WHERE id = ?').run(id)
   }
