@@ -1,3 +1,4 @@
+/** 数据库实体类型定义：定义所有数据库表对应的 TypeScript 接口 */
 export interface TimestampedEntity {
   id: number
   createdAt: string
@@ -113,4 +114,41 @@ export interface AppSetting {
   configValue: string
   description: string | null
   updatedAt: string
+}
+
+export interface ModelParameter {
+  id: number
+  parameterGroup: string
+  parameterName: string
+  parameterKey: string
+  defaultValue: number
+  currentValue: number
+  minValue: number | null
+  maxValue: number | null
+  unit: string | null
+  description: string | null
+  updatedAt: string
+}
+
+export interface GrowthStageObservation extends TimestampedEntity {
+  plantingRecordId: number
+  stageCode: string
+  stageName: string
+  observationDate: string
+  daysAfterPlanting: number | null
+  accumulatedTemperature: number | null
+  plantHeight: number | null
+  leafCount: number | null
+  stemDiameter: number | null
+  notes: string | null
+}
+
+export interface ParameterAdjustmentRecord {
+  id: number
+  parameterId: number
+  oldValue: number
+  newValue: number
+  adjustmentReason: string | null
+  adjustedBy: string | null
+  adjustedAt: string
 }
