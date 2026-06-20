@@ -1,3 +1,4 @@
+/** 地块 IPC 处理器：注册主进程与渲染进程通信接口 */
 import { ipcMain } from 'electron'
 import { getDatabase } from '../database'
 import { FieldsRepository } from '../database/repositories/fields-repository'
