@@ -1,3 +1,4 @@
+/** 地块管理页面：提供地块信息的增删改查功能 */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Button,
@@ -6,6 +7,7 @@ import {
   InputNumber,
   Modal,
   Popconfirm,
+  Select,
   Space,
   Table,
   Tag,
@@ -13,6 +15,7 @@ import {
   message
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import { useNavigate } from 'react-router-dom'
 import type { Field } from '../../../../shared/types/database'
 import type { CreateFieldInput, UpdateFieldInput } from '../../../../main/database/repositories/fields-repository'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
@@ -48,11 +51,15 @@ function mapFieldToFormValues(field: Field): FieldFormValues {
 
 export function FieldsPage(): React.JSX.Element {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const { items, loading, submitting } = useAppSelector((state) => state.fields)
   const [messageApi, contextHolder] = message.useMessage()
   const [form] = Form.useForm<FieldFormValues>()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState<Field | null>(null)
+  const [keyword, setKeyword] = useState('')
+  const [provinceFilter, setProvinceFilter] = useState<string | undefined>()
+  const [soilTypeFilter, setSoilTypeFilter] = useState<string | undefined>()
 
   useEffect(() => {
     void dispatch(fetchFields())
@@ -77,6 +84,33 @@ export function FieldsPage(): React.JSX.Element {
       }
     },
     [dispatch, messageApi]
+  )
+
+  const filteredItems = useMemo(() => {
+    const normalizedKeyword = keyword.trim().toLowerCase()
+
+    return items.filter((item) => {
+      const matchesKeyword =
+        !normalizedKeyword ||
+        [item.name, item.locationProvince, item.locationCity, item.locationCounty, item.locationDetail, item.soilType, item.notes]
+          .filter(Boolean)
+          .some((value) => value!.toLowerCase().includes(normalizedKeyword))
+
+      const matchesProvince = !provinceFilter || item.locationProvince === provinceFilter
+      const matchesSoilType = !soilTypeFilter || item.soilType === soilTypeFilter
+
+      return matchesKeyword && matchesProvince && matchesSoilType
+    })
+  }, [items, keyword, provinceFilter, soilTypeFilter])
+
+  const provinceOptions = useMemo(
+    () => Array.from(new Set(items.map((item) => item.locationProvince).filter(Boolean))).map((value) => ({ label: value, value })),
+    [items]
+  )
+
+  const soilTypeOptions = useMemo(
+    () => Array.from(new Set(items.map((item) => item.soilType).filter(Boolean))).map((value) => ({ label: value, value })),
+    [items]
   )
 
   const columns: ColumnsType<Field> = useMemo(
@@ -117,6 +151,9 @@ export function FieldsPage(): React.JSX.Element {
         key: 'actions',
         render: (_, record) => (
           <Space>
+            <Button type="link" onClick={() => navigate(`/fields/${record.id}`)}>
+              查看详情
+            </Button>
             <Button type="link" onClick={() => handleEdit(record)}>
               编辑
             </Button>
@@ -129,7 +166,7 @@ export function FieldsPage(): React.JSX.Element {
         )
       }
     ],
-    [handleDelete, handleEdit]
+    [handleDelete, handleEdit, navigate]
   )
 
   function handleCreate(): void {
@@ -173,14 +210,40 @@ export function FieldsPage(): React.JSX.Element {
           </Typography.Paragraph>
         </div>
         <Space>
-          <Tag color="processing">共 {items.length} 条</Tag>
+          <Tag color="processing">筛选后 {filteredItems.length} / 共 {items.length} 条</Tag>
           <Button type="primary" onClick={handleCreate}>
             新增地块
           </Button>
         </Space>
       </div>
 
-      <Table rowKey="id" loading={loading} columns={columns} dataSource={items} />
+      <div className="filters-bar">
+        <Input
+          allowClear
+          placeholder="搜索地块名称、位置、土壤类型、备注"
+          value={keyword}
+          onChange={(event) => setKeyword(event.target.value)}
+          style={{ width: 320 }}
+        />
+        <Select
+          allowClear
+          placeholder="按省份筛选"
+          value={provinceFilter}
+          onChange={setProvinceFilter}
+          options={provinceOptions}
+          style={{ width: 180 }}
+        />
+        <Select
+          allowClear
+          placeholder="按土壤类型筛选"
+          value={soilTypeFilter}
+          onChange={setSoilTypeFilter}
+          options={soilTypeOptions}
+          style={{ width: 180 }}
+        />
+      </div>
+
+      <Table rowKey="id" loading={loading} columns={columns} dataSource={filteredItems} />
 
       <Modal
         destroyOnHidden
