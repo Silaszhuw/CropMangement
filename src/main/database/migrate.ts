@@ -1,3 +1,7 @@
+/**
+ * 数据库迁移管理：扫描并执行 SQL 迁移文件，记录已应用版本到 schema_migrations 表
+ */
+
 import Database from 'better-sqlite3'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
