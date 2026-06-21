@@ -13,7 +13,10 @@ export function HomePage(): React.JSX.Element {
             系统介绍
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            玉米优质高效栽培管理系统用于组织基础数据、试验观测、专家知识、决策支持与模型参数校准，界面结构按 PDF 原型重新对齐为“一级菜单 + 二级工作台 + 三级专题页面”。
+            玉米优质高效栽培管理系统用于组织基础数据、试验观测、专家知识、决策支持与模型参数校准，界面结构按 PDF要求 原型重新对齐为“一级菜单 + 二级工作台 + 三级专题页面”。
+          </Typography.Paragraph>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+            新乡工程学院-信息工程学院-人工智能232-朱旺2023460212
           </Typography.Paragraph>
         </div>
         <Tag color="green">版本 {version}</Tag>
