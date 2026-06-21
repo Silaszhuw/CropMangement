@@ -76,6 +76,24 @@ export function AppLayout(): React.JSX.Element {
   const location = useLocation()
   const navigate = useNavigate()
   const selectedMenuKey = resolveSelectedMenuKey(location.pathname)
+  const [collapsed, setCollapsed] = React.useState(false)
+
+  // 监听窗口大小变化，当宽度小于 1200px 时自动折叠侧边栏
+  React.useEffect(() => {
+    const handleResize = () => {
+      const threshold = 1200 // 当窗口宽度小于 1200px 时折叠
+      setCollapsed(window.innerWidth < threshold)
+    }
+
+    // 初始检查
+    handleResize()
+
+    // 添加事件监听
+    window.addEventListener('resize', handleResize)
+
+    // 清理事件监听
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   return (
     <ConfigProvider
@@ -89,9 +107,17 @@ export function AppLayout(): React.JSX.Element {
       }}
     >
       <Layout className="app-shell" style={{ minHeight: '100vh' }}>
-        <Layout.Sider className="app-sider" width={248}>
-          <div className="app-logo">玉米优质高效栽培管理系统</div>
-          <div className="app-sider-subtitle">作物建模与应用系统开发原型</div>
+        <Layout.Sider
+          className="app-sider"
+          width={248}
+          collapsedWidth={64}
+          collapsed={collapsed}
+          trigger={null}
+        >
+          <div className={`app-logo${collapsed ? ' app-logo-collapsed' : ''}`}>
+            {collapsed ? '玉米' : '玉米优质高效栽培管理系统'}
+          </div>
+          {!collapsed && <div className="app-sider-subtitle">作物建模与应用系统开发原型</div>}
           <div className="app-sider-menu">
             <Menu
               className="app-menu"
@@ -99,6 +125,7 @@ export function AppLayout(): React.JSX.Element {
               selectedKeys={selectedMenuKey ? [selectedMenuKey] : []}
               items={menuItems}
               onClick={({ key }) => navigate(key)}
+              inlineCollapsed={collapsed}
             />
           </div>
         </Layout.Sider>
