@@ -692,4 +692,648 @@ WHERE NOT EXISTS (
   SELECT 1 FROM decisions WHERE title = '草地贪夜蛾监测与早防建议'
 );
 
+-- 新增演示地块：补充更多列表、详情和联动页面展示样本。
+INSERT INTO fields (
+  name,
+  area,
+  location_province,
+  location_city,
+  location_county,
+  location_detail,
+  soil_type,
+  soil_ph,
+  soil_organic_matter,
+  notes
+)
+SELECT
+  '鹤壁示范田',
+  8.4,
+  '河南',
+  '鹤壁',
+  '浚县',
+  '善堂镇',
+  '潮土',
+  7.1,
+  17.3,
+  '演示数据：场景化夏播地块，用于补充病害、虫害与评价样例。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM fields WHERE name = '鹤壁示范田'
+);
+
+INSERT INTO crop_varieties (
+  name,
+  code,
+  type,
+  growth_period,
+  yield_potential,
+  disease_resistance,
+  description,
+  is_active
+)
+SELECT
+  '京科968',
+  'JK968',
+  '中熟',
+  125,
+  880,
+  '抗倒性较好，对叶部病害具中等抗性。',
+  '演示数据：依据公开品种介绍整理，用于原型展示，不作为审定参数。',
+  1
+WHERE NOT EXISTS (
+  SELECT 1 FROM crop_varieties WHERE code = 'JK968'
+);
+
+INSERT INTO planting_records (
+  field_id,
+  variety_id,
+  year,
+  season,
+  planting_date,
+  expected_harvest_date,
+  actual_harvest_date,
+  planting_density,
+  row_spacing,
+  plant_spacing,
+  status,
+  notes
+)
+SELECT
+  (SELECT id FROM fields WHERE name = '鹤壁示范田' ORDER BY id LIMIT 1),
+  (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1),
+  2024,
+  '夏播',
+  '2024-06-14',
+  '2024-10-01',
+  '2024-10-03',
+  5000,
+  60.0,
+  20.5,
+  'harvested',
+  '演示数据：历史夏播批次，重点模拟抽雄后叶部病害巡查与评价记录。'
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM planting_records
+  WHERE field_id = (SELECT id FROM fields WHERE name = '鹤壁示范田' ORDER BY id LIMIT 1)
+    AND year = 2024
+    AND season = '夏播'
+    AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1)
+);
+
+INSERT INTO planting_records (
+  field_id,
+  variety_id,
+  year,
+  season,
+  planting_date,
+  expected_harvest_date,
+  actual_harvest_date,
+  planting_density,
+  row_spacing,
+  plant_spacing,
+  status,
+  notes
+)
+SELECT
+  (SELECT id FROM fields WHERE name = '鹤壁示范田' ORDER BY id LIMIT 1),
+  (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1),
+  2026,
+  '夏播',
+  '2026-06-16',
+  '2026-10-05',
+  NULL,
+  5100,
+  60.0,
+  20.0,
+  'growing',
+  '演示数据：当前夏播批次，用于联调苗期虫害监测、巡田决策与阶段观测页面。'
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM planting_records
+  WHERE field_id = (SELECT id FROM fields WHERE name = '鹤壁示范田' ORDER BY id LIMIT 1)
+    AND year = 2026
+    AND season = '夏播'
+    AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1)
+);
+
+INSERT INTO growth_records (
+  planting_record_id,
+  record_date,
+  growth_stage,
+  plant_height,
+  leaf_count,
+  leaf_color,
+  disease_status,
+  pest_status,
+  soil_moisture,
+  weather_temperature_avg,
+  weather_rainfall,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '2024-07-05',
+  'V5',
+  31.0,
+  5,
+  '深绿',
+  '未见异常',
+  '未见明显虫口',
+  22.8,
+  27.1,
+  16.0,
+  '苗期长势均匀，群体整齐度较好。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND record_date = '2024-07-05'
+);
+
+INSERT INTO growth_records (
+  planting_record_id,
+  record_date,
+  growth_stage,
+  plant_height,
+  leaf_count,
+  leaf_color,
+  disease_status,
+  pest_status,
+  soil_moisture,
+  weather_temperature_avg,
+  weather_rainfall,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '2024-08-03',
+  'VT',
+  224.0,
+  16,
+  '正常',
+  '下部叶片见零星病斑',
+  '未见明显虫口',
+  20.3,
+  29.0,
+  8.0,
+  '进入抽雄窗口，后续重点关注吐丝同步和叶部病害。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND record_date = '2024-08-03'
+);
+
+INSERT INTO growth_records (
+  planting_record_id,
+  record_date,
+  growth_stage,
+  plant_height,
+  leaf_count,
+  leaf_color,
+  disease_status,
+  pest_status,
+  soil_moisture,
+  weather_temperature_avg,
+  weather_rainfall,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '2024-08-28',
+  'R3',
+  228.0,
+  16,
+  '正常',
+  '穗位叶附近出现疑似灰斑病长矩形病斑',
+  '未见明显虫口',
+  24.6,
+  27.4,
+  32.0,
+  '连续高湿后病害风险上升，需加强穗位叶及以上功能叶巡查。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND record_date = '2024-08-28'
+);
+
+INSERT INTO growth_records (
+  planting_record_id,
+  record_date,
+  growth_stage,
+  plant_height,
+  leaf_count,
+  leaf_color,
+  disease_status,
+  pest_status,
+  soil_moisture,
+  weather_temperature_avg,
+  weather_rainfall,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '2024-09-18',
+  'R5',
+  229.0,
+  16,
+  '正常偏淡',
+  '病斑扩展受控',
+  '未见明显虫口',
+  18.7,
+  24.8,
+  6.0,
+  '灌浆后期长势稳定，病害未进一步扩展到上部功能叶。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND record_date = '2024-09-18'
+);
+
+INSERT INTO growth_records (
+  planting_record_id,
+  record_date,
+  growth_stage,
+  plant_height,
+  leaf_count,
+  leaf_color,
+  disease_status,
+  pest_status,
+  soil_moisture,
+  weather_temperature_avg,
+  weather_rainfall,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2026 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '2026-06-20',
+  'VE',
+  4.2,
+  1,
+  '鲜绿',
+  '未见异常',
+  '苗带周边需关注心叶受害与虫粪',
+  26.1,
+  29.4,
+  11.0,
+  '出苗基本整齐，进入苗期虫害早查窗口。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2026 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND record_date = '2026-06-20'
+);
+
+INSERT INTO operation_records (
+  planting_record_id,
+  operation_type,
+  operation_date,
+  details,
+  cost,
+  operator,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '播种',
+  '2024-06-14',
+  '麦茬夏播，机械精量播种，目标密度 5000 株/亩。',
+  205.0,
+  '赵国强',
+  '演示数据'
+WHERE NOT EXISTS (
+  SELECT 1 FROM operation_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND operation_type = '播种'
+    AND operation_date = '2024-06-14'
+);
+
+INSERT INTO operation_records (
+  planting_record_id,
+  operation_type,
+  operation_date,
+  details,
+  cost,
+  operator,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '追肥',
+  '2024-07-11',
+  'V6 阶段追施尿素 12 kg/亩，并结合中耕保墒。',
+  390.0,
+  '赵国强',
+  '演示数据'
+WHERE NOT EXISTS (
+  SELECT 1 FROM operation_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND operation_type = '追肥'
+    AND operation_date = '2024-07-11'
+);
+
+INSERT INTO operation_records (
+  planting_record_id,
+  operation_type,
+  operation_date,
+  details,
+  cost,
+  operator,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '病害监测',
+  '2024-08-29',
+  '高湿天气后重点巡查穗位叶及以上功能叶，记录矩形病斑与扩展趋势。',
+  120.0,
+  '赵国强',
+  '依据公开病害识别资料整理的演示记录'
+WHERE NOT EXISTS (
+  SELECT 1 FROM operation_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND operation_type = '病害监测'
+    AND operation_date = '2024-08-29'
+);
+
+INSERT INTO operation_records (
+  planting_record_id,
+  operation_type,
+  operation_date,
+  details,
+  cost,
+  operator,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2026 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '播种',
+  '2026-06-16',
+  '麦收后抢墒播种，播后完成封闭除草和苗情标记。',
+  215.0,
+  '刘海峰',
+  '演示数据'
+WHERE NOT EXISTS (
+  SELECT 1 FROM operation_records
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2026 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND operation_type = '播种'
+    AND operation_date = '2026-06-16'
+);
+
+INSERT INTO growth_stage_observations (
+  planting_record_id,
+  stage_code,
+  stage_name,
+  observation_date,
+  days_after_planting,
+  accumulated_temperature,
+  plant_height,
+  leaf_count,
+  stem_diameter,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  'V6',
+  '六叶期',
+  '2024-07-10',
+  26,
+  402.0,
+  43.0,
+  6,
+  1.9,
+  '苗势整齐，适合开展第一次关键节点建档。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_stage_observations
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND stage_code = 'V6'
+);
+
+INSERT INTO growth_stage_observations (
+  planting_record_id,
+  stage_code,
+  stage_name,
+  observation_date,
+  days_after_planting,
+  accumulated_temperature,
+  plant_height,
+  leaf_count,
+  stem_diameter,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  'R1',
+  '吐丝期',
+  '2024-08-09',
+  56,
+  862.0,
+  226.0,
+  16,
+  2.7,
+  '吐丝较集中，适合叠加病害与授粉同步性观测。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_stage_observations
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND stage_code = 'R1'
+);
+
+INSERT INTO growth_stage_observations (
+  planting_record_id,
+  stage_code,
+  stage_name,
+  observation_date,
+  days_after_planting,
+  accumulated_temperature,
+  plant_height,
+  leaf_count,
+  stem_diameter,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  'R5',
+  '蜡熟期',
+  '2024-09-16',
+  94,
+  1478.0,
+  229.0,
+  16,
+  2.8,
+  '灌浆进入后期，可用于和评价数据联动核对。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_stage_observations
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND stage_code = 'R5'
+);
+
+INSERT INTO growth_stage_observations (
+  planting_record_id,
+  stage_code,
+  stage_name,
+  observation_date,
+  days_after_planting,
+  accumulated_temperature,
+  plant_height,
+  leaf_count,
+  stem_diameter,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2026 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  'VE',
+  '出苗',
+  '2026-06-20',
+  4,
+  86.0,
+  4.2,
+  1,
+  0.5,
+  '当前以整齐度和苗期虫害早查为主。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM growth_stage_observations
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2026 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND stage_code = 'VE'
+);
+
+INSERT INTO evaluations (
+  planting_record_id,
+  evaluation_date,
+  evaluation_type,
+  actual_yield,
+  total_cost,
+  total_income,
+  net_profit,
+  overall_score,
+  improvement_suggestions,
+  notes
+)
+SELECT
+  (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '2024-10-08',
+  '产量效益评价',
+  798.0,
+  1525.0,
+  2290.0,
+  765.0,
+  82.0,
+  '可继续优化吐丝至灌浆期高湿条件下的叶部病害预警与巡查频次。',
+  '演示数据：与灰斑病监测场景联动。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM evaluations
+  WHERE planting_record_id = (SELECT id FROM planting_records WHERE year = 2024 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1)
+    AND evaluation_date = '2024-10-08'
+);
+
+INSERT INTO knowledge_items (
+  category,
+  title,
+  content,
+  tags,
+  source,
+  is_active
+)
+SELECT
+  '病害',
+  '玉米灰斑病高湿高温风险与识别要点',
+  '公开资料显示，灰斑病在持续高湿和温暖条件下风险上升，病斑多呈沿叶脉受限的长矩形灰褐色病斑。对原型演示而言，可把抽雄后到成熟前设置为重点巡查窗口，并优先记录穗位叶及以上功能叶的病斑扩展情况。',
+  '灰斑病,叶部病害,高湿,吐丝期,成熟期,病斑识别',
+  'https://extension.umn.edu/corn-pest-management/gray-leaf-spot-corn',
+  1
+WHERE NOT EXISTS (
+  SELECT 1 FROM knowledge_items WHERE title = '玉米灰斑病高湿高温风险与识别要点'
+);
+
+INSERT INTO knowledge_items (
+  category,
+  title,
+  content,
+  tags,
+  source,
+  is_active
+)
+SELECT
+  '虫害',
+  '草地贪夜蛾心叶危害与倒Y头纹识别提示',
+  'UF/IFAS 资料提示，草地贪夜蛾幼虫常在玉米心叶或叶片取食，形成成排穿孔和破碎叶缘；成熟幼虫头部可见浅色倒Y纹。演示场景可据此把苗期至喇叭口期的心叶、虫孔和新鲜虫粪设为高频巡查项。',
+  '草地贪夜蛾,倒Y纹,心叶,虫孔,虫粪,苗期',
+  'https://edis.ifas.ufl.edu/publication/IN255',
+  1
+WHERE NOT EXISTS (
+  SELECT 1 FROM knowledge_items WHERE title = '草地贪夜蛾心叶危害与倒Y头纹识别提示'
+);
+
+INSERT INTO knowledge_items (
+  category,
+  title,
+  content,
+  tags,
+  source,
+  is_active
+)
+SELECT
+  '监测预警',
+  'FAO 草地贪夜蛾常态化巡田与记录建议',
+  'FAO 将可持续治理、监测和农户能力建设作为草地贪夜蛾控制的重要组成部分，并明确 FAMEWS 应在每次田间巡查和诱捕器检查时使用。用于本地原型时，适合把巡田日期、样点数量、虫口级别和处置反馈作为标准化演示字段。',
+  'FAO,FAMEWS,监测预警,巡田,诱捕器,综合治理',
+  'https://www.fao.org/fall-armyworm/en/',
+  1
+WHERE NOT EXISTS (
+  SELECT 1 FROM knowledge_items WHERE title = 'FAO 草地贪夜蛾常态化巡田与记录建议'
+);
+
+INSERT INTO decisions (
+  field_id,
+  planting_record_id,
+  decision_type,
+  decision_category,
+  decision_date,
+  title,
+  content,
+  basis_summary,
+  recommended_actions,
+  status,
+  user_feedback
+)
+SELECT
+  (SELECT id FROM fields WHERE name = '鹤壁示范田' ORDER BY id LIMIT 1),
+  NULL,
+  '常年决策',
+  '病害监测',
+  '2026-07-20',
+  '吐丝后灰斑病高风险窗口巡查建议',
+  '若地块进入吐丝后连续高湿天气，应将巡查重点放在穗位叶及以上功能叶，优先识别沿叶脉受限的长矩形病斑，并根据扩展趋势决定是否升级处置。',
+  '灰斑病在高湿温暖条件下风险上升，且常在吐丝到成熟阶段发展，对功能叶保护价值较高。',
+  '连续 5 至 7 天保持病害巡查；同步记录病斑位置、面积等级和天气条件，必要时评估是否采取进一步防控。',
+  'pending',
+  NULL
+WHERE NOT EXISTS (
+  SELECT 1 FROM decisions WHERE title = '吐丝后灰斑病高风险窗口巡查建议'
+);
+
+INSERT INTO decisions (
+  field_id,
+  planting_record_id,
+  decision_type,
+  decision_category,
+  decision_date,
+  title,
+  content,
+  basis_summary,
+  recommended_actions,
+  status,
+  user_feedback
+)
+SELECT
+  (SELECT id FROM fields WHERE name = '鹤壁示范田' ORDER BY id LIMIT 1),
+  (SELECT id FROM planting_records WHERE year = 2026 AND season = '夏播' AND variety_id = (SELECT id FROM crop_varieties WHERE code = 'JK968' LIMIT 1) LIMIT 1),
+  '当年决策',
+  '虫害监测',
+  '2026-06-21',
+  '苗期草地贪夜蛾样点巡查与记录建议',
+  '当前批次处于出苗后早期阶段，建议按固定样点检查心叶穿孔、虫粪和可疑幼虫，并把疑似虫株位置与复查结果纳入连续记录。',
+  'FAO 强调常态化监测和记录，UF/IFAS 资料显示草地贪夜蛾在玉米心叶期危害特征明显，适合在苗期建立标准化巡查流程。',
+  '按日或隔日完成 1 轮样点检查；发现可疑虫株后补拍照片并记录是否出现倒Y头纹、虫孔和新鲜虫粪。',
+  'accepted',
+  '已纳入 2026 夏播批次演示巡田流程。'
+WHERE NOT EXISTS (
+  SELECT 1 FROM decisions WHERE title = '苗期草地贪夜蛾样点巡查与记录建议'
+);
+
 COMMIT;
