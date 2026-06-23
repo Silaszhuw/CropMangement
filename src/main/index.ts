@@ -5,6 +5,7 @@
 import { app, BrowserWindow } from 'electron'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { existsSync } from 'node:fs'
 import { initializeDatabase } from './database'
 import {
   registerAppSettingsIpc,
@@ -23,8 +24,18 @@ import {
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url))
 const isDev = !app.isPackaged
+const windowsAppUserModelId = 'com.cropmodeling.desktop'
+
+function resolveWindowIconPath(): string | undefined {
+  const iconPath = isDev
+    ? join(currentDirectory, '../../resources/app.ico')
+    : join(process.resourcesPath, 'app.ico')
+
+  return existsSync(iconPath) ? iconPath : undefined
+}
 
 function createWindow(): void {
+  const windowIconPath = resolveWindowIconPath()
   const mainWindow = new BrowserWindow({
     width: 1440,
     height: 960,
@@ -32,6 +43,7 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     autoHideMenuBar: true,
+    ...(windowIconPath ? { icon: windowIconPath } : {}),
     webPreferences: {
       preload: join(currentDirectory, '../preload/index.mjs'),
       contextIsolation: true,
@@ -54,6 +66,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  app.setAppUserModelId(windowsAppUserModelId)
   initializeDatabase(app)
   registerFieldsIpc()
   registerCropVarietiesIpc()
