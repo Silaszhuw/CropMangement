@@ -8,6 +8,9 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "tsc --noEmit && electron-vite build",
+    "dist": "pnpm build && electron-builder",
+    "dist:win": "pnpm build && electron-builder --win nsis",
+    "dist:dir": "pnpm build && electron-builder --win dir",
     "preview": "electron-vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -52,11 +55,16 @@
   },
   "build": {
     "appId": "com.cropmodeling.desktop",
-    "productName": "CropModeling",
+    "productName": "玉米栽培管理系统",
     "directories": {
-      "buildResources": "resources"
+      "buildResources": "resources",
+      "output": "dist"
     },
     "extraResources": [
+      {
+        "from": "resources/app.ico",
+        "to": "app.ico"
+      },
       {
         "from": "src/main/database/migrations",
         "to": "migrations",
@@ -66,7 +74,23 @@
     "files": [
       "out/**",
       "package.json"
-    ]
+    ],
+    "win": {
+      "target": ["nsis"],
+      "executableName": "玉米栽培管理系统",
+      "artifactName": "玉米栽培管理系统 Setup ${version}.${ext}",
+      "icon": "resources/app.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "玉米栽培管理系统",
+      "installerIcon": "resources/app.ico",
+      "uninstallerIcon": "resources/app.ico"
+    }
   },
   "packageManager": "pnpm@11.7.0"
 }
