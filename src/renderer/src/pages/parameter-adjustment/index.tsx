@@ -9,7 +9,7 @@ export function ParameterAdjustmentPage(): React.JSX.Element {
   return (
     <SecondaryModuleFrame
       title="参数调整"
-      description="该模块在 PDF 信息架构中属于二级入口页，负责组织模型参数校准流程，而不是直接承载全部编辑表格。"
+      description="该模块属于二级入口页，负责组织模型参数校准流程，而不是直接承载全部编辑表格。"
     >
       <div className="module-grid">
         <Card
