@@ -7,11 +7,13 @@ body {
 }
 
 #root {
-  min-height: 100vh;
+  height: 100vh;
 }
 
 .app-shell {
   background: transparent;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .app-sider {
@@ -19,6 +21,12 @@ body {
     linear-gradient(180deg, rgba(41, 62, 36, 0.99) 0%, rgba(58, 77, 49, 0.98) 100%) !important;
   padding: 20px 16px;
   box-shadow: 6px 0 18px rgba(40, 58, 32, 0.12);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .app-logo {
@@ -51,7 +59,10 @@ body {
 }
 
 .app-sider-menu {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
+  padding-right: 4px;
 }
 
 .app-header {
@@ -62,6 +73,10 @@ body {
   padding: 18px 28px;
   background: rgba(255, 255, 255, 0.52);
   border-bottom: 1px solid rgba(102, 116, 87, 0.12);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
 }
 
 .app-header-title {
@@ -140,6 +155,14 @@ body {
   max-width: 1360px;
   width: 100%;
   margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.app-main {
+  height: 100vh;
+  overflow: hidden;
 }
 
 .content-card {
@@ -199,18 +222,30 @@ body {
 @media (max-width: 900px) {
   .app-shell {
     display: block;
+    height: auto;
+    overflow: visible;
   }
 
   .app-sider {
     width: 100% !important;
     max-width: none !important;
+    position: relative;
+    height: auto;
   }
 
   .app-header {
     padding: 16px;
+    position: static;
+    backdrop-filter: none;
   }
 
   .app-content {
     padding: 20px 16px 28px;
+    overflow: visible;
+  }
+
+  .app-main {
+    height: auto;
+    overflow: visible;
   }
 }
