@@ -417,12 +417,49 @@ pnpm dev
 # 构建生产版本
 pnpm build
 
-# 打包应用
-pnpm package
+# 生成 Windows 安装包
+pnpm dist:win
 
-# 打包并创建安装程序
-pnpm package:all
+# 仅生成解包目录（不生成安装程序）
+pnpm dist:dir
+
+# 按默认 electron-builder 配置打包
+pnpm dist
 ```
+
+### Windows 打包流程
+
+1. 安装依赖
+
+```bash
+pnpm install
+```
+
+2. 如本机首次安装依赖后无法启动 Electron，可先补装运行时
+
+```powershell
+$env:ELECTRON_MIRROR="https://npmmirror.com/mirrors/electron/"
+node node_modules/electron/install.js
+```
+
+3. 生成 Windows 安装程序
+
+```bash
+pnpm dist:win
+```
+
+4. 构建完成后查看产物
+
+- 安装程序：`dist/玉米栽培管理系统 Setup 0.1.0.exe`
+- 解包目录：`dist/win-unpacked/`
+
+### Windows 打包说明
+
+- `pnpm dist:win` 会先执行 `pnpm build`，再调用 `electron-builder --win nsis`
+- 当前打包目标为 **NSIS 单文件安装程序（.exe）**
+- 当前安装器为**向导式安装**，用户可自行选择安装目录
+- 桌面快捷方式、开始菜单快捷方式、窗口图标统一使用 `resources/app.ico`
+- 若安装 Electron 运行时失败，优先检查网络环境，或使用上面的 `ELECTRON_MIRROR`
 
 ### 数据存储与初始化
 - 应用使用本地 SQLite 数据库文件保存数据
@@ -458,7 +495,7 @@ pnpm dev
 ```
 
 ## 环境要求
-- **Node.js**：>= 18.0.0
+- **Node.js**：>= 22.12.0
 - **pnpm**：>= 8.0.0
 - **操作系统**：Windows 10+、macOS 11+、Linux
 
