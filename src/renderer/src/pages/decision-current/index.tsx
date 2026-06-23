@@ -221,7 +221,7 @@ export function DecisionCurrentPage(): React.JSX.Element {
         <div>
           <Typography.Title level={3} style={{ marginBottom: 8 }}>当年决策子系统</Typography.Title>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            本模块对应 PDF 二级页面。应先作为当年决策工作台，再进入独立的生育进程预测页面和季内决策档案。
+            当年决策工作台，再进入独立的生育进程预测页面和季内决策档案。
           </Typography.Paragraph>
         </div>
         <Space>
