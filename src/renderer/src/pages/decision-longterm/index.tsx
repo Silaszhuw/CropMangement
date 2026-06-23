@@ -217,7 +217,7 @@ export function DecisionLongtermPage(): React.JSX.Element {
         <div>
           <Typography.Title level={3} style={{ marginBottom: 8 }}>常年决策子系统</Typography.Title>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            本模块对应 PDF 二级页面。常年决策子系统应先提供功能入口，再进入具体的适宜生育进程模拟页面与历史决策台账。
+            常年决策子系统应先提供功能入口，再进入具体的适宜生育进程模拟页面与历史决策台账。
           </Typography.Paragraph>
         </div>
         <Space>
