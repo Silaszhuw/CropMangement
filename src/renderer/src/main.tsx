@@ -13,7 +13,7 @@ import {
   SettingOutlined,
   ThunderboltOutlined
 } from '@ant-design/icons'
-import { Navigate, Route, BrowserRouter as Router, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { HashRouter as Router, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import {
   CropVarietyDetailPage,
@@ -129,7 +129,7 @@ export function AppLayout(): React.JSX.Element {
             />
           </div>
         </Layout.Sider>
-        <Layout>
+        <Layout className="app-main">
           <Layout.Header className="app-header">
             <div className="app-header-title">作物建模与应用系统开发原型</div>
           </Layout.Header>
