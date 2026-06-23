@@ -49,6 +49,24 @@ interface PlantingRecordFormValues {
   notes?: string
 }
 
+const plantingStatusLabelMap: Record<string, string> = {
+  planning: '规划中',
+  growing: '在种',
+  harvested: '已收获',
+  failed: '失败'
+}
+
+const plantingStatusOptions = [
+  { label: '规划中', value: 'planning' },
+  { label: '在种', value: 'growing' },
+  { label: '已收获', value: 'harvested' },
+  { label: '失败', value: 'failed' }
+]
+
+function getPlantingStatusLabel(status: string): string {
+  return plantingStatusLabelMap[status] ?? status
+}
+
 function mapPlantingRecordToFormValues(record: PlantingRecord): PlantingRecordFormValues {
   return {
     fieldId: record.fieldId,
@@ -111,9 +129,10 @@ export function PlantingRecordsPage(): React.JSX.Element {
     return plantingRecordsState.items.filter((item) => {
       const fieldName = fieldMap.get(item.fieldId)?.name
       const varietyName = varietyMap.get(item.varietyId)?.name
+      const statusLabel = getPlantingStatusLabel(item.status)
       const matchesKeyword =
         !normalizedKeyword ||
-        [fieldName, varietyName, item.season, item.status, item.notes]
+        [fieldName, varietyName, item.season, item.status, statusLabel, item.notes]
           .filter(Boolean)
           .some((value) => value!.toLowerCase().includes(normalizedKeyword))
 
@@ -190,7 +209,7 @@ export function PlantingRecordsPage(): React.JSX.Element {
             failed: 'error'
           }
 
-          return <Tag color={colorMap[record.status] ?? 'default'}>{record.status}</Tag>
+          return <Tag color={colorMap[record.status] ?? 'default'}>{getPlantingStatusLabel(record.status)}</Tag>
         }
       },
       {
@@ -273,7 +292,7 @@ export function PlantingRecordsPage(): React.JSX.Element {
             试验数据管理
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            本模块为二级工作台，负责组织试验记录台账与专题试验录入入口。根据 PDF 结构，生育期试验数据管理应作为独立三级页面进入。
+            本模块为二级工作台，负责组织试验记录台账与专题试验录入入口。生育期试验数据管理应作为独立三级页面进入。
           </Typography.Paragraph>
         </div>
         <Space>
@@ -349,12 +368,7 @@ export function PlantingRecordsPage(): React.JSX.Element {
           placeholder="按状态筛选"
           value={statusFilter}
           onChange={setStatusFilter}
-          options={[
-            { label: 'planning', value: 'planning' },
-            { label: 'growing', value: 'growing' },
-            { label: 'harvested', value: 'harvested' },
-            { label: 'failed', value: 'failed' }
-          ]}
+          options={plantingStatusOptions}
           style={{ width: 160 }}
         />
       </div>
@@ -426,14 +440,7 @@ export function PlantingRecordsPage(): React.JSX.Element {
             <InputNumber min={0} precision={2} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item label="状态" name="status" rules={[{ required: true, message: '请选择状态' }]}>
-            <Select
-              options={[
-                { label: 'planning', value: 'planning' },
-                { label: 'growing', value: 'growing' },
-                { label: 'harvested', value: 'harvested' },
-                { label: 'failed', value: 'failed' }
-              ]}
-            />
+            <Select options={plantingStatusOptions} />
           </Form.Item>
           <Form.Item label="备注" name="notes">
             <Input.TextArea rows={3} />
