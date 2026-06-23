@@ -10,7 +10,7 @@ export function HelpPage(): React.JSX.Element {
             系统帮助
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            本页采用说明书体例整理系统操作路径、模块职责和维护要点，以匹配 PDF 原型中“系统帮助”的文档化表达方式。
+            本页采用说明书体例整理系统操作路径、模块职责和维护要点。
           </Typography.Paragraph>
         </div>
       </div>
