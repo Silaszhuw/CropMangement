@@ -9,7 +9,7 @@
     "dev": "electron-vite dev",
     "build": "tsc --noEmit && electron-vite build",
     "dist": "pnpm build && electron-builder",
-    "dist:win": "pnpm build && electron-builder --win nsis",
+    "dist:win": "pnpm build && electron-builder --win",
     "dist:dir": "pnpm build && electron-builder --win dir",
     "preview": "electron-vite preview",
     "lint": "eslint .",
@@ -76,10 +76,13 @@
       "package.json"
     ],
     "win": {
-      "target": ["nsis"],
+      "target": ["nsis", "portable"],
       "executableName": "玉米栽培管理系统",
       "artifactName": "玉米栽培管理系统 Setup ${version}.${ext}",
       "icon": "resources/app.ico"
+    },
+    "portable": {
+      "artifactName": "玉米栽培管理系统 Portable ${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
